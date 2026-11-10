@@ -4,6 +4,21 @@
 
 ---
 
+## 2026-11-11（三）討論記錄 #3
+
+**本次完成：**
+- 建立 AI 派工模式：新增 `/dispatch` 指令（`.claude/commands/dispatch.md`）與 `implementer` agent，搭配既有 `tester`、`reviewer`
+- 移除根目錄重複的 `architecture.md`、`checklist.md`、`progress.md`、`log.md`（與 `docs/` 內容相同），以 `docs/` 為唯一版本
+- `progress.md`：勾選「建立 GitHub repo」，將 API Key 註冊與 Jev 測試標為【人工】
+- `CLAUDE.md`：補上健康檢查指令，並註明 `/dispatch` 收尾更新 progress／log 視為已授權
+- 新增 `派工模式使用說明.md`
+
+**未決事項：**
+- `.claude/settings.json` 的權限調整被自動模式安全檢查擋下，需使用者手動套用
+- 本次為工具設定，未經 reviewer subagent 審查（agent 需重開 session 才會載入）
+
+---
+
 ## 2026-11-03（三）討論記錄 #2
 
 **定位調整：** 這份專案不再以「課程作業、需要老師審核」的角度處理，改以「可交付的實際專案 / 作品集」角度規劃。架構與邏輯要經得起之後跟別人介紹與被追問，不依賴外部審查節點。Jev 是確定要用的技術選型，不是待確認的加分項目。
