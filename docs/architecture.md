@@ -146,6 +146,7 @@
 - [ ] RabbitMQ 消費失敗處理策略（死信佇列 / 重試上限）尚未決定
 - [ ] 工作日曆計算（跳過週末）的實作方式尚未決定（手刻邏輯 or 套件）
 - [ ] 重開工單是否重算 SLA 的規則尚未定案（見 6.1）
+- [ ] 停表分鐘（`paused_minutes`）以日曆分鐘或工作時間分鐘換算尚未決定；解決時限採工作時間（見 3.3），兩者基準需一致
 
 ## 8. ER 關聯圖
 
@@ -164,7 +165,9 @@ tickets
 ├── assignee_id     BIGINT NULL           -- 負責工程師 ID
 ├── response_due_at DATETIME              -- 回應時限到期時間
 ├── resolution_due_at DATETIME            -- 解決時限到期時間
-├── paused_minutes  BIGINT DEFAULT 0      -- 累計停表分鐘數
+├── responded_at    DATETIME NULL         -- 實際回應時間（首次進入 Assigned）；NULL 表示尚未回應
+├── resolved_at     DATETIME NULL         -- 實際解決時間（進入 Resolved）；NULL 表示尚未解決
+├── paused_minutes  BIGINT NOT NULL DEFAULT 0 -- 累計停表分鐘數（來源見「SLA 欄位說明」）
 ├── response_breached  BOOLEAN            -- 回應是否逾期
 ├── resolution_breached BOOLEAN           -- 解決是否逾期
 ├── created_at      DATETIME NOT NULL
@@ -191,6 +194,13 @@ pause_histories                           -- 停表歷程
 **關聯：**
 - `tickets` 1 ←→ N `status_transitions`（一張工單有多筆狀態轉移紀錄）
 - `tickets` 1 ←→ N `pause_histories`（一張工單可多次進出 Pending）
+
+**SLA 欄位說明：**
+- `paused_minutes` 是由 `pause_histories` 衍生的累計值，不是獨立輸入。每當一筆暫停紀錄寫入 `exited_at`（離開 Pending）時，在同一個交易中累加該段的 `exited_at − entered_at`（分鐘）。仍在 Pending（`exited_at` 為 NULL）的那一段尚未計入，因此 Pending 期間 `paused_minutes` 不變。
+- `pause_histories` 是事實來源；`paused_minutes` 與已結束的暫停紀錄總和應一致，兩者不一致視為資料錯誤。
+- `responded_at`：工單首次由 Open 進入 Assigned 時寫入，之後不再更新（轉派不改變、不重算）。
+- `resolved_at`：進入 Resolved 時寫入。重開（Resolved → Assigned）時此欄位如何處理，待 6.1 重開規則定案後決定。
+- 逾期判定（對應 3.3）：`response_breached` 為 `responded_at` 晚於 `response_due_at`；`resolution_breached` 為 `resolved_at` 扣除 `paused_minutes` 後晚於 `resolution_due_at`。
 
 ### 8.2 kb-service（kb_db）
 
@@ -235,3 +245,4 @@ articles
 |---|---|
 | 2026-11-03 | 建立草案：服務拆分、狀態機、SLA 規則、分派方式（系統自動指派 + Jev）、部署選 Docker Compose、新增邏輯盲點章節 |
 | 2026-11-11 | v1 定稿：新增 ER 關聯圖（ticket_db 三表、kb_db 一表）、API 端點草案、Monorepo 骨架建置完成 |
+| 2026-11-11 | ER 補充：`tickets` 新增 `responded_at`、`resolved_at`；`paused_minutes` 改為 NOT NULL 並寫明來源（由 `pause_histories` 在離開 Pending 時累加）；新增「SLA 欄位說明」；列出停表分鐘計算基準為未決事項 |
