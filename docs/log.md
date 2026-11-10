@@ -11,6 +11,7 @@
 - 新增 `.dockerignore`（排除 `.git`、`.env`、`target/`、`docs/`、`.claude/`、文件與 PDF）
 - `init-db/01-create-databases.sh` 在 git 中改為可執行（100755）
 - 驗證：`mvn -q test` 通過；`docker compose up -d --build` 成功；`curl http://localhost:8081/actuator/health`（ticket-service）與 `curl http://localhost:8082/actuator/health`（kb-service）皆回 `{"status":"UP"}`
+- 持久化實測：插入標記資料（`tickets.id = 9999`）後執行 `docker compose restart`，重啟後標記仍在、筆數不變，確認資料由 `mysql-data` Volume 保存（非 `data.sql` 重灌）；測完已刪除標記，兩個服務重啟後 health 皆 `UP`
 - 過程處理：本機 3306 被非本專案的容器 `verify-clone-mysql-1` 佔用，經使用者同意後已停止（未刪除）；先前失敗的 `up` 留下網路不完整的舊容器（服務連不到 `mysql`），以 `docker compose up -d --force-recreate` 重建，未動 Volume
 - `reviewer` 審查：無阻擋性問題；README 專案結構錯誤已修正
 
