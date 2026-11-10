@@ -1,0 +1,19 @@
+# 建置映像檔時不送入 build context 的檔案
+.git
+.gitignore
+.github
+.vscode
+.idea
+.claude
+.env
+.env.*
+!.env.example
+
+# Maven 建置產物（映像檔內會自行編譯）
+**/target/
+
+# 文件與本機資料（不影響映像檔）
+docs/
+*.md
+*.pdf
+派工模式使用說明.md

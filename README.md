@@ -12,9 +12,19 @@
 
 ## 快速啟動
 
-```bash
-docker compose up --build
-```
+1. 建立本機環境變數檔（`.env` 已列入 `.gitignore`，不會進入版本控制）：
+
+   ```bash
+   cp .env.example .env
+   ```
+
+2. 編輯 `.env`，填入 `MYSQL_ROOT_PASSWORD` 與 `DB_APP_PASSWORD`（只放本機使用的密碼，不要 commit）。
+
+3. 啟動所有服務：
+
+   ```bash
+   docker compose up --build
+   ```
 
 首次啟動需要建置映像檔，約需 3–5 分鐘。啟動完成後：
 
@@ -45,7 +55,7 @@ docker compose down -v
 │   ├── Dockerfile
 │   ├── pom.xml
 │   └── src/
-└── architecture.md          # 架構決策文件
+└── docs/                    # 規格文件（architecture.md 等）
 ```
 
 ## 技術棧
