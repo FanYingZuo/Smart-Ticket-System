@@ -49,6 +49,12 @@ public class Ticket {
     @Column(nullable = false)
     private Long pausedMinutes = 0L;
 
+    // 首次進入 Assigned 時寫入
+    private LocalDateTime respondedAt;
+
+    // 進入 Resolved 時寫入
+    private LocalDateTime resolvedAt;
+
     private Boolean responseBreached;
 
     private Boolean resolutionBreached;

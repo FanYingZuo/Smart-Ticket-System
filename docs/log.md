@@ -4,6 +4,28 @@
 
 ---
 
+## 2026-11-11（三）討論記錄 #5
+
+**本次完成（以 `/dispatch` 流程：implementer → tester → reviewer）：**
+- `architecture.md` ER 補 SLA 時間戳（`tickets.responded_at`、`resolved_at`），寫明 `paused_minutes` 來源：由 `pause_histories` 在離開 Pending 時累加，Pending 期間不變（commit `d80cf95`）
+- `Ticket.java` 新增 `respondedAt`、`resolvedAt`
+- `data.sql`：tickets 補兩個新欄位並與狀態轉移時間吻合；工單 #2（PENDING）`paused_minutes` 由 30 改為 0
+- 新增 `TicketRelationRepositoryTest`（2 個測試）：驗證工單與狀態轉移歷程、暫停歷程的雙向關聯與排序，含 `exited_at` 為 NULL 的暫停紀錄
+- 驗證：tester 回報 `mvn -q test` 全過（共 4 個測試）；reviewer 無問題；`docker compose up -d --build` 後兩個 health 皆 `{"status":"UP"}`；真實 MySQL 上 `ddl-auto` 已補上兩個欄位，工單與轉移／暫停歷程的關聯查詢結果正確
+- `progress.md` 勾選骨架階段：「架構決策文件定稿」「核心 Entity 與 Repository」。骨架階段（11/9–11/15）四項至此全部完成
+
+**注意：**
+- 既有 MySQL Volume 的 seed 因 `INSERT IGNORE` 不會被覆寫，本機已用 UPDATE 一次性同步 5 筆 seed（內容與 `data.sql` 相同）；新 clone 的環境不受影響
+- 測試使用 H2 且關閉 seed，`responded_at`、`resolved_at` 的讀寫僅在真實 MySQL 以查詢驗證，尚無自動化測試，待 Service 階段補
+
+**未決事項：**
+- 停表分鐘以日曆分鐘或工作時間分鐘換算尚未決定（已列入 `architecture.md` 第 7 節）
+- 重開工單時 `resolved_at` 的處理，待 6.1 重開規則定案
+- 「準備」階段的「Docker Compose 骨架」寫 MySQL、RabbitMQ、Chroma、Keycloak，與骨架階段範圍不一致，尚未決定，故未勾選
+- `.claude/settings.json` 的修改仍未 commit
+
+---
+
 ## 2026-11-11（三）討論記錄 #4
 
 **本次完成（commit `4918b61`）：**

@@ -25,10 +25,10 @@
 
 ## 骨架階段（11/9–11/15）待辦
 
-- [ ] 架構決策文件定稿（草案見 `docs/architecture.md`）
+- [x] 架構決策文件定稿（草案見 `docs/architecture.md`）
 - [x] ticket-service、kb-service 可啟動並回應健康檢查端點
 - [x] docker-compose.yml 能一鍵起服務與 DB，資料以 Volume 持久化
-- [ ] 核心 Entity 與 Repository，含至少一組關聯映射，有可用測試資料
+- [x] 核心 Entity 與 Repository，含至少一組關聯映射，有可用測試資料
 
 ## 主流程階段（11/16–12/10）待辦
 
