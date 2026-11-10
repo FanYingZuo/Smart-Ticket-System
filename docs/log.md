@@ -4,6 +4,28 @@
 
 ---
 
+## 2026-11-11（三）討論記錄 #4
+
+**本次完成（commit `4918b61`）：**
+- `README.md`：快速啟動補上 `cp .env.example .env` 與填寫 `MYSQL_ROOT_PASSWORD`、`DB_APP_PASSWORD` 的步驟；修正專案結構段落中 `architecture.md` 的位置（實際在 `docs/`）
+- 新增 `.dockerignore`（排除 `.git`、`.env`、`target/`、`docs/`、`.claude/`、文件與 PDF）
+- `init-db/01-create-databases.sh` 在 git 中改為可執行（100755）
+- 驗證：`mvn -q test` 通過；`docker compose up -d --build` 成功；`curl http://localhost:8081/actuator/health`（ticket-service）與 `curl http://localhost:8082/actuator/health`（kb-service）皆回 `{"status":"UP"}`
+- 過程處理：本機 3306 被非本專案的容器 `verify-clone-mysql-1` 佔用，經使用者同意後已停止（未刪除）；先前失敗的 `up` 留下網路不完整的舊容器（服務連不到 `mysql`），以 `docker compose up -d --force-recreate` 重建，未動 Volume
+- `reviewer` 審查：無阻擋性問題；README 專案結構錯誤已修正
+
+**例外說明：** 本次未以 `/dispatch` 啟動，由主 session 直接修改，`reviewer` 為事後補派。往後任務一律走 `/dispatch`。
+
+**未決事項：**
+- ER（`architecture.md` 第 8 節）尚缺 SLA 時間戳，且 `paused_minutes` 的來源未寫明；建議規則：每段暫停的 `exited_at` 寫入時，累加 `exited_at − entered_at`（分鐘），待使用者確認
+- seed 工單 #2 資料不一致：狀態 PENDING 且 `paused_minutes = 30`，但對應 `pause_histories` 未結束（`exited_at = NULL`）；待上一項決定後修正
+- 尚無 repository 測試驗證工單與轉移歷程的關聯（屬骨架階段，待使用者決定是否現在做）
+- 根目錄重複文件已於 #3 移除，無需再處理
+- `progress.md` 未勾選：「Docker Compose 骨架」寫 MySQL、RabbitMQ、Chroma、Keycloak，但骨架階段只要求服務與 DB，兩者範圍不一致，待使用者決定
+- `.claude/settings.json` 的修改（#3 遺留）仍未 commit
+
+---
+
 ## 2026-11-11（三）討論記錄 #3
 
 **本次完成：**
