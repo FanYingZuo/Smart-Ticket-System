@@ -2,18 +2,21 @@ services:
   mysql:
     image: mysql:8.0
     environment:
-      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
-      DB_APP_PASSWORD: "${DB_APP_PASSWORD}"
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD:?請在 .env 設定 MYSQL_ROOT_PASSWORD，不可為空}"
+      DB_APP_PASSWORD: "${DB_APP_PASSWORD:?請在 .env 設定 DB_APP_PASSWORD，不可為空}"
     ports:
       - "3306:3306"
     volumes:
       - mysql-data:/var/lib/mysql
       - ./init-db:/docker-entrypoint-initdb.d
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p\"$$MYSQL_ROOT_PASSWORD\""]
+      # 用 127.0.0.1 強制走 TCP：首次初始化時的臨時伺服器只聽 socket，
+      # 用 localhost 會過早判定 healthy，服務會在正式伺服器起來前連線失敗。
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p\"$$MYSQL_ROOT_PASSWORD\""]
       interval: 10s
       timeout: 5s
       retries: 10
+      start_period: 60s
 
   ticket-service:
     build:
@@ -24,7 +27,7 @@ services:
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ticket_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Taipei
       SPRING_DATASOURCE_USERNAME: app
-      SPRING_DATASOURCE_PASSWORD: "${DB_APP_PASSWORD}"
+      SPRING_DATASOURCE_PASSWORD: "${DB_APP_PASSWORD:?請在 .env 設定 DB_APP_PASSWORD，不可為空}"
     depends_on:
       mysql:
         condition: service_healthy
@@ -44,7 +47,7 @@ services:
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/kb_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Taipei
       SPRING_DATASOURCE_USERNAME: app
-      SPRING_DATASOURCE_PASSWORD: "${DB_APP_PASSWORD}"
+      SPRING_DATASOURCE_PASSWORD: "${DB_APP_PASSWORD:?請在 .env 設定 DB_APP_PASSWORD，不可為空}"
     depends_on:
       mysql:
         condition: service_healthy

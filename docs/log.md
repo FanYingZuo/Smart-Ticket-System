@@ -4,6 +4,42 @@
 
 ---
 
+## 2026-11-14（六）討論記錄 #6
+
+**本次完成：里程碑一繳交前檢查，補強「全新 clone 後首次啟動」**
+- 對照《專題實作作業說明書》里程碑一的四項交付，內容皆已具備；尚缺 push 與 `m1` tag（截止 11/15 23:59）
+- 資安檢查：掃描全部 commit 歷史，未發現密碼、API Key、私鑰；`.env` 從未進版控；兩個服務目前沒有 Controller，Actuator 只開放 `health`、`info`
+- `docker-compose.yml`：
+  - `MYSQL_ROOT_PASSWORD`、`DB_APP_PASSWORD` 改用必填語法 `${VAR:?訊息}`，缺變數或為空時 `docker compose up` 直接報錯（原本只印警告並傳入空字串，會建立出空密碼帳號）
+  - mysql 健康檢查由 `-h localhost` 改為 `-h 127.0.0.1` 並加 `start_period: 60s`：首次初始化的臨時伺服器只聽 socket，原寫法可能過早判定 healthy，服務在正式伺服器起來前連線失敗且不會重試
+- `init-db/01-create-databases.sh`：執行 mysql 前檢查兩個變數為非空（第二道防線）
+- 新增 `.gitattributes`（`*.sh text eol=lf`）：避免 Windows 上 clone 後 init 腳本變成 CRLF，在 MySQL 容器內執行失敗
+- `README.md`：快速啟動補上「缺變數會報錯」「密碼只用英數字」兩點提醒
+- `.claude/settings.json`：deny 清單加入 `Read(./.env)`、`Read(./.env.*)`（commit `a217623`）
+
+**驗證：**
+- `mvn -q test` 通過（4 個測試，0 失敗）
+- 既有 Volume：`docker compose up -d --build` 後三個容器 healthy，`curl http://localhost:8081/actuator/health` 與 `http://localhost:8082/actuator/health` 皆回 `{"status":"UP"}`
+- 全新空 Volume（以另一個 Compose 專案名稱 `m1fresh` 模擬助教首次啟動）：init 腳本執行成功，三個容器 healthy，兩個健康端點回 `UP`，seed 筆數正確（tickets 5、status_transitions 8、pause_histories 1、articles 5）
+- 必填語法：在 `.env` 缺變數的情況下實測，Compose 以 exit 1 停止並顯示中文提示
+- 未實測：在另一台 Windows 機器全新 clone 後 `.sh` 是否為 LF（僅以 `git check-attr` 確認屬性已套用）
+
+**保留的問題與理由：**
+- 兩個服務共用資料庫帳號 `app`（對 `ticket_db`、`kb_db` 皆有全部權限），資料邊界未由資料庫權限強制。本次曾實作「每個服務一個帳號」並通過 reviewer 的設計審查，但需要更動 `.env` 與 `.env.example`；使用者決定不做，理由是課程作業不需要帳號層級的隔離，里程碑一檢核也不涉及。已全部還原。服務間「不直接讀對方資料庫」目前靠程式自律
+- MySQL 3306 對主機所有網卡開放、容器以 root 執行：不影響里程碑一檢核，暫不處理
+
+**例外說明：** 帳號拆分以 implementer → tester → reviewer 流程進行；還原後保留的補強（compose、init 腳本、`.gitattributes`、README）由主 session 直接修改，再交 reviewer 審查。
+
+**未決事項：**
+- 【人工】`git push origin main`、打 `m1` tag 並 push（`.claude/settings.json` 禁止 AI 執行 `git push`）
+- `architecture.md` 開頭仍寫「狀態：草案（規劃階段，尚未開始實作）、最後更新 2026-11-03」，與修訂紀錄的 v1 定稿不一致，待使用者決定是否修改
+- 分派方式採系統自動指派，與題目說明「組長指派或工程師認領，擇一」不同，架構簡報時需說明理由
+- repo 內含課程教材 PDF；若 repo 為公開，需確認是否適合公開
+- 本機殘留測試用 Volume `m1fresh_mysql-data`（驗證首次啟動時建立），刪除需使用者同意
+- 停表分鐘計算基準、重開工單的 SLA 規則仍未定案（同 #5）
+
+---
+
 ## 2026-11-11（三）討論記錄 #5
 
 **本次完成（以 `/dispatch` 流程：implementer → tester → reviewer）：**

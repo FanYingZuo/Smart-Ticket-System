@@ -1,0 +1,2 @@
+# shell 腳本會以 bind mount 掛進 Linux 容器執行，不論在哪個平台 checkout 都必須是 LF。
+*.sh text eol=lf

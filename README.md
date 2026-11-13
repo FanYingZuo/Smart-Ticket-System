@@ -19,6 +19,8 @@
    ```
 
 2. 編輯 `.env`，填入 `MYSQL_ROOT_PASSWORD` 與 `DB_APP_PASSWORD`（只放本機使用的密碼，不要 commit）。
+   - 兩個變數缺任何一個或為空，`docker compose up` 會直接報錯並停止。
+   - 密碼請只用英數字；含單引號或反斜線會破壞資料庫初始化 SQL。
 
 3. 啟動所有服務：
 
