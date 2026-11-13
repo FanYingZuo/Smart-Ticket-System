@@ -10,7 +10,9 @@
       "Bash(rm:*)",
       "Bash(docker compose down -v:*)",
       "PowerShell(Remove-Item:*)",
-      "PowerShell(del:*)"
+      "PowerShell(del:*)",
+      "Read(./.env)",
+      "Read(./.env.*)"
     ]
   }
 }
